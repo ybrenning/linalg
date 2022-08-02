@@ -5,7 +5,7 @@ numeric = int | float | complex | np.number
 
 
 class Vector:
-    def __init__(self, *args: tuple[numeric]) -> None:
+    def __init__(self, *args: numeric) -> None:
         if len(args) <= 1:
             raise ValueError("Vector must be initialized with at least 2 dimensions")
         else:
@@ -13,6 +13,9 @@ class Vector:
 
     def __str__(self) -> str:
         return str(self.elems)
+    
+    def __repr__(self) -> str:
+        return f"Vector({repr(self.elems)})"
 
     def __len__(self) -> int:
         return len(self.elems)
@@ -34,7 +37,8 @@ class Vector:
     def __sub__(self, other):
         if not isinstance(other, self.__class__) and not np.isinstance(other, numeric):
             raise TypeError("Only subtract vectors with numerics or other vectors")
-        return self.__add__(other * (-1))
+        else:
+            return self.__add__(other * (-1))
 
     def __rsub__(self, other):
         return self.__sub__(other)
@@ -60,12 +64,34 @@ class Vector:
         return sum(x * y for x, y in zip(self, w))
 
 
+class Matrix:
+    def __init__(self, *args: list[list[numeric]]) -> None:
+        if len(args) == 0:
+            raise ValueError("Missing matrix initializer")
+        for arg in args:
+            if len(args[0]) != len(arg):
+                raise ValueError("Matrix rows must be of equal length")
+        
+        self.elems = args
+    
+    def __str__(self) -> str:
+        return ", \n".join((str(x) for x in self.elems))
+    
+    def __repr__(self) -> str:
+        return f"Matrix({repr(self.elems)})"
+
+
 def main():
     # Basic boilerplate code
 
     v = Vector(3, 2, 8)
     w = Vector(3, 2, 2)
     print(v - w)
+    print(repr(v))
+    
+    a = Matrix([1,2,3],[4,5,6],[7,8,9])
+    print(a)
+    print(repr(a))
 
 
 if __name__ == "__main__":
