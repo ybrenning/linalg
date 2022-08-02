@@ -1,7 +1,6 @@
 from __future__ import annotations
-import numpy as np
 
-numeric = int | float | complex | np.number
+numeric = int | float | complex
 
 
 class Vector:
@@ -13,7 +12,7 @@ class Vector:
 
     def __str__(self) -> str:
         return str(self.elems)
-    
+
     def __repr__(self) -> str:
         return f"Vector({repr(self.elems)})"
 
@@ -34,16 +33,16 @@ class Vector:
     def __radd__(self, other: Vector | numeric) -> Vector:
         return self.__add__(other)
 
-    def __sub__(self, other):
-        if not isinstance(other, self.__class__) and not np.isinstance(other, numeric):
+    def __sub__(self, other: Vector | numeric) -> Vector:
+        if not isinstance(other, self.__class__) and not isinstance(other, numeric):
             raise TypeError("Only subtract vectors with numerics or other vectors")
         else:
             return self.__add__(other * (-1))
 
-    def __rsub__(self, other):
+    def __rsub__(self, other: Vector | numeric) -> Vector:
         return self.__sub__(other)
 
-    def __mul__(self, other) -> Vector | numeric:
+    def __mul__(self, other: Vector | numeric) -> Vector | numeric:
         if isinstance(other, self.__class__):
             return self.scprod(other)
         elif isinstance(other, numeric):
@@ -65,18 +64,18 @@ class Vector:
 
 
 class Matrix:
-    def __init__(self, *args: list[list[numeric]]) -> None:
+    def __init__(self, *args: list[numeric]) -> None:
         if len(args) == 0:
             raise ValueError("Missing matrix initializer")
         for arg in args:
             if len(args[0]) != len(arg):
                 raise ValueError("Matrix rows must be of equal length")
-        
+
         self.elems = args
-    
+
     def __str__(self) -> str:
         return ", \n".join((str(x) for x in self.elems))
-    
+
     def __repr__(self) -> str:
         return f"Matrix({repr(self.elems)})"
 
@@ -88,8 +87,13 @@ def main():
     w = Vector(3, 2, 2)
     print(v - w)
     print(repr(v))
+
+    a = Matrix(
+        [1, 2, 3], 
+        [4, 5, 6], 
+        [7, 8, 9]
+    )
     
-    a = Matrix([1,2,3],[4,5,6],[7,8,9])
     print(a)
     print(repr(a))
 
