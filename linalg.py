@@ -4,7 +4,7 @@ import numpy as np
 numeric = int | float | complex | np.number
 
 
-class Vector:
+class Vector:   
     def __init__(self, *args: numeric) -> None:
         if len(args) <= 1:
             raise ValueError("Vector must be initialized with at least 2 dimensions")
@@ -13,7 +13,7 @@ class Vector:
 
     def __str__(self) -> str:
         return str(self.elems)
-    
+
     def __repr__(self) -> str:
         return f"Vector({repr(self.elems)})"
 
@@ -23,36 +23,42 @@ class Vector:
     def __iter__(self):
         return self.elems.__iter__()
 
-    def __add__(self, other: Vector | numeric) -> Vector:
-        if isinstance(other, self.__class__):
-            return Vector(*(x + y for x, y in zip(self, other)))
-        elif isinstance(other, numeric):
-            return Vector(*(x + other for x in self))
+    def __add__(self, __o: object) -> Vector:
+        if isinstance(__o, self.__class__):
+            return Vector(*(x + y for x, y in zip(self, __o)))
+        elif isinstance(__o, numeric):
+            return Vector(*(x + __o for x in self))
         else:
             raise TypeError("Only add vectors with numerics or other vectors")
 
-    def __radd__(self, other: Vector | numeric) -> Vector:
-        return self.__add__(other)
+    def __radd__(self, __o: object) -> Vector:
+        return self.__add__(__o)
 
-    def __sub__(self, other):
-        if not isinstance(other, self.__class__) and not np.isinstance(other, numeric):
+    def __sub__(self, __o: object):
+        if not isinstance(__o, self.__class__) and not np.isinstance(__o, numeric):
             raise TypeError("Only subtract vectors with numerics or other vectors")
         else:
-            return self.__add__(other * (-1))
+            return self.__add__(__o * (-1))
 
-    def __rsub__(self, other):
-        return self.__sub__(other)
+    def __rsub__(self, __o: object):
+        return self.__sub__(__o)
 
-    def __mul__(self, other) -> Vector | numeric:
-        if isinstance(other, self.__class__):
-            return self.scprod(other)
-        elif isinstance(other, numeric):
-            return self.scmult(other)
+    def __mul__(self, __o: object) -> Vector | numeric:
+        if isinstance(__o, self.__class__):
+            return self.scprod(__o)
+        elif isinstance(__o, numeric):
+            return self.scmult(__o)
         else:
             raise TypeError("Only multiply vectors with numerics or other vectors")
 
-    def __rmul__(self, other: Vector | numeric) -> Vector | numeric:
-        return self.__mul__(other)
+    def __rmul__(self, __o: object) -> Vector | numeric:
+        return self.__mul__(__o)
+
+    def __eq__(self, __o: object) -> bool:
+        if isinstance(__o, self.__class__):
+            return self.elems == __o.elems
+        else:
+            raise TypeError("Comparators must both be of type Vector")
 
     def scmult(self, alpha: numeric) -> Vector:
         return Vector(*(x * alpha for x in self))
@@ -65,31 +71,52 @@ class Vector:
 
 
 class Matrix:
-    def __init__(self, *args: list[list[numeric]]) -> None:
+    def __init__(self, *args: list[numeric]) -> None:
         if len(args) == 0:
             raise ValueError("Missing matrix initializer")
         for arg in args:
             if len(args[0]) != len(arg):
                 raise ValueError("Matrix rows must be of equal length")
-        
+
         self.elems = args
-    
+
     def __str__(self) -> str:
         return ", \n".join((str(x) for x in self.elems))
-    
+
     def __repr__(self) -> str:
         return f"Matrix({repr(self.elems)})"
 
+    def det(self) -> numeric:
+        if len(self.elems) != len(self.elems[0]):
+            raise ValueError("Determinant can only be calculated for a square Matrix of size nxn")
 
-def main():
+        if len(self.elems) == 2:
+            self.__det2d()
+        elif len(self.elems) == 3:
+            self.__det3d()
+
+    def __det2d(self, matrix: Matrix = None) -> numeric:
+        if matrix is None:
+            matrix = self
+        return matrix.elems[0][0] * matrix.elems[1][1] - matrix.elems[0][1] * matrix.elems[1][0]
+
+    def __det3d(self) -> numeric:
+        pass
+
+
+def main() -> None:
     # Basic boilerplate code
 
     v = Vector(3, 2, 8)
     w = Vector(3, 2, 2)
+    print(v)
     print(v - w)
     print(repr(v))
-    
-    a = Matrix([1,2,3],[4,5,6],[7,8,9])
+
+    x = Vector(3, 2, 8)
+    print(x == v)
+
+    a = Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
     print(a)
     print(repr(a))
 
