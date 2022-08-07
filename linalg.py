@@ -86,6 +86,25 @@ class Matrix:
     def __repr__(self) -> str:
         return f"Matrix({repr(self.elems)})"                        
 
+    def __mul__(self, __o: object) -> Matrix:
+        if isinstance(__o, self.__class__):
+            cols_fst, rows_fst = len(self.elems[0]), len(self.elems)
+            cols_snd, rows_snd = len(__o.elems[0]), len(__o.elems)
+            
+            if cols_fst == rows_snd:
+                res = [[0 for _ in range(0, cols_snd)] for _ in range(0, rows_fst)]
+                
+                for i in range(0, rows_fst):
+                    for j in range(0, cols_snd):
+                        for k in range(0, cols_fst):
+                            res[i][j] += self.elems[i][k] * __o.elems[k][j]
+                
+                return Matrix(*res)
+            else:
+                raise ValueError("Number of cols in first matrix must be equal to number of rows in second matrix")
+        else:
+            raise TypeError("Matrix multiplication not yet implemented for calculations other than Matrix * Matrix")
+
     def det(self) -> numeric:
         if len(self.elems) != len(self.elems[0]):
             raise ValueError("Determinant can only be calculated for a square Matrix of size nxn")
@@ -126,6 +145,7 @@ def main() -> None:
     # print(a.det())
     
     b = Matrix([3, 2, 1], [1, 0, 2])
+    print(a * b)
 
 
 if __name__ == "__main__":
