@@ -84,25 +84,29 @@ class Matrix:
         return ", \n".join((str(x) for x in self.elems))
 
     def __repr__(self) -> str:
-        return f"Matrix({repr(self.elems)})"
+        return f"Matrix({repr(self.elems)})"                        
 
     def det(self) -> numeric:
         if len(self.elems) != len(self.elems[0]):
             raise ValueError("Determinant can only be calculated for a square Matrix of size nxn")
 
         if len(self.elems) == 2:
-            self.__det2d()
+            return self.__det2d()
         elif len(self.elems) == 3:
-            self.__det3d()
+            return self.__det3d()
 
-    def __det2d(self, matrix: Matrix = None) -> numeric:
-        if matrix is None:
-            matrix = self
-        return matrix.elems[0][0] * matrix.elems[1][1] - matrix.elems[0][1] * matrix.elems[1][0]
+    def __det2d(self) -> numeric:
+        return self.elems[0][0] * self.elems[1][1] - self.elems[0][1] * self.elems[1][0]
 
     def __det3d(self) -> numeric:
-        pass
-
+        return (
+            self.elems[0][0] * self.elems[1][1] * self.elems[2][2]
+            + self.elems[0][1] * self.elems[1][2] * self.elems[2][0]
+            + self.elems[0][2] * self.elems[1][0] * self.elems[2][1]
+            - self.elems[0][2] * self.elems[1][1] * self.elems[2][0]
+            - self.elems[0][1] * self.elems[1][0] * self.elems[2][2]
+            - self.elems[0][0] * self.elems[1][2] * self.elems[2][1]
+        )
 
 def main() -> None:
     # Basic boilerplate code
@@ -116,9 +120,12 @@ def main() -> None:
     x = Vector(3, 2, 8)
     print(x == v)
 
-    a = Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
+    a = Matrix([1, 2], [0, 1], [4, 0])
     print(a)
     print(repr(a))
+    # print(a.det())
+    
+    b = Matrix([3, 2, 1], [1, 0, 2])
 
 
 if __name__ == "__main__":
