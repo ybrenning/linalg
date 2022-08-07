@@ -72,7 +72,7 @@ class Vector:
 
 class Matrix:
     def __init__(self, *args: list[numeric]) -> None:
-        if len(args) == 0:
+        if len(args) == 0 or len(args[0]) == 0:
             raise ValueError("Missing matrix initializer")
         for arg in args:
             if len(args[0]) != len(arg):
