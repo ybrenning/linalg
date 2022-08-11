@@ -47,7 +47,7 @@ class Vector:
         if isinstance(__o, self.__class__):
             return self.scprod(__o)
         elif isinstance(__o, numeric):
-            return self.scmult(__o)
+            return self.scmul(__o)
         else:
             raise TypeError("Only multiply vectors with numerics or other vectors")
 
@@ -60,7 +60,10 @@ class Vector:
         else:
             raise TypeError("Comparators must both be of type Vector")
 
-    def scmult(self, alpha: numeric) -> Vector:
+    def __ne__(self, __o: object) -> bool:
+        return not self.__eq__(__o)
+
+    def scmul(self, alpha: numeric) -> Vector:
         return Vector(*(x * alpha for x in self))
 
     def scprod(self, w: Vector) -> numeric:
@@ -126,26 +129,47 @@ class Matrix:
             - self.elems[0][1] * self.elems[1][0] * self.elems[2][2]
             - self.elems[0][0] * self.elems[1][2] * self.elems[2][1]
         )
-
-def main() -> None:
-    # Basic boilerplate code
-
-    v = Vector(3, 2, 8)
-    w = Vector(3, 2, 2)
-    print(v)
-    print(v - w)
-    print(repr(v))
-
-    x = Vector(3, 2, 8)
-    print(x == v)
-
-    a = Matrix([1, 2], [0, 1], [4, 0])
-    print(a)
-    print(repr(a))
-    # print(a.det())
     
-    b = Matrix([3, 2, 1], [1, 0, 2])
-    print(a * b)
+    def inverse(self) -> Matrix:
+        pass
+    
+    def _isinvertable(self) -> bool:
+        return len(self.elems) == len(self.elems[0]) and self.det() == 0
+
+
+import unittest
+
+
+class TestVector(unittest.TestCase):
+    def test_scmul(self):
+        v = Vector(1, 2, 3)
+        double_v = v.scmul(2)
+        
+        for index, value in enumerate(double_v):
+            self.assertEqual(value, v.elems[index] * 2)
+    
+    def test_scprod(self):
+        v, w = Vector(1, 2, 3), Vector(-7, 8, 9)
+        self.assertEqual(v.scprod(w), 36)
+
+
+class TestMatrix(unittest.TestCase):
+    def test_det(self):
+        m = Matrix([3, 7], [1, -4])
+        self.assertEqual(m.det(), -19)
+        
+        m = Matrix([0, 1, 2], [3, 2, 1], [1, 1, 0])
+        self.assertEqual(m.det(), 3)
+    
+    def test_inverse(self):
+        pass
+    
+    def test_isinvertable(self):
+        pass
+
+
+def main():
+    unittest.main()
 
 
 if __name__ == "__main__":
