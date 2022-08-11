@@ -4,7 +4,7 @@ import numpy as np
 numeric = int | float | complex | np.number
 
 
-class Vector:   
+class Vector:
     def __init__(self, *args: numeric) -> None:
         if len(args) <= 1:
             raise ValueError("Vector must be initialized with at least 2 dimensions")
@@ -87,30 +87,36 @@ class Matrix:
         return ", \n".join((str(x) for x in self.elems))
 
     def __repr__(self) -> str:
-        return f"Matrix({repr(self.elems)})"                        
+        return f"Matrix({repr(self.elems)})"
 
     def __mul__(self, __o: object) -> Matrix:
         if isinstance(__o, self.__class__):
             cols_fst, rows_fst = len(self.elems[0]), len(self.elems)
             cols_snd, rows_snd = len(__o.elems[0]), len(__o.elems)
-            
+
             if cols_fst == rows_snd:
                 res = [[0 for _ in range(0, cols_snd)] for _ in range(0, rows_fst)]
-                
+
                 for i in range(0, rows_fst):
                     for j in range(0, cols_snd):
                         for k in range(0, cols_fst):
                             res[i][j] += self.elems[i][k] * __o.elems[k][j]
-                
+
                 return Matrix(*res)
             else:
-                raise ValueError("Number of cols in first matrix must be equal to number of rows in second matrix")
+                raise ValueError(
+                    "Number of cols in first matrix must be equal to number of rows in second matrix"
+                )
         else:
-            raise TypeError("Matrix multiplication not yet implemented for calculations other than Matrix * Matrix")
+            raise TypeError(
+                "Matrix multiplication not yet implemented for calculations other than Matrix * Matrix"
+            )
 
     def det(self) -> numeric:
         if len(self.elems) != len(self.elems[0]):
-            raise ValueError("Determinant can only be calculated for a square Matrix of size nxn")
+            raise ValueError(
+                "Determinant can only be calculated for a square Matrix of size nxn"
+            )
 
         if len(self.elems) == 2:
             return self.__det2d()
@@ -129,10 +135,10 @@ class Matrix:
             - self.elems[0][1] * self.elems[1][0] * self.elems[2][2]
             - self.elems[0][0] * self.elems[1][2] * self.elems[2][1]
         )
-    
+
     def inverse(self) -> Matrix:
         pass
-    
+
     def _isinvertable(self) -> bool:
         return len(self.elems) == len(self.elems[0]) and self.det() == 0
 
@@ -144,10 +150,10 @@ class TestVector(unittest.TestCase):
     def test_scmul(self):
         v = Vector(1, 2, 3)
         double_v = v.scmul(2)
-        
+
         for index, value in enumerate(double_v):
             self.assertEqual(value, v.elems[index] * 2)
-    
+
     def test_scprod(self):
         v, w = Vector(1, 2, 3), Vector(-7, 8, 9)
         self.assertEqual(v.scprod(w), 36)
@@ -157,13 +163,13 @@ class TestMatrix(unittest.TestCase):
     def test_det(self):
         m = Matrix([3, 7], [1, -4])
         self.assertEqual(m.det(), -19)
-        
+
         m = Matrix([0, 1, 2], [3, 2, 1], [1, 1, 0])
         self.assertEqual(m.det(), 3)
-    
+
     def test_inverse(self):
         pass
-    
+
     def test_isinvertable(self):
         pass
 
