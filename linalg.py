@@ -140,38 +140,80 @@ class Matrix:
         pass
 
     def _isinvertable(self) -> bool:
-        return len(self.elems) == len(self.elems[0]) and self.det() == 0
+        return len(self.elems) == len(self.elems[0]) and self.det() != 0
 
 
 import unittest
 
 
 class TestVector(unittest.TestCase):
+    def test_vector_init(self):
+        self.assertRaises(ValueError, Vector, )
+        self.assertRaises(ValueError, Vector, 1)
+    
     def test_scmul(self):
-        v = Vector(1, 2, 3)
+        # Two-dimensional
+        v = Vector(1, 2)
         double_v = v.scmul(2)
-
         for index, value in enumerate(double_v):
             self.assertEqual(value, v.elems[index] * 2)
 
+        # Three-dimensional
+        v = Vector(1, 2, 3)
+        double_v = v.scmul(2)
+        for index, value in enumerate(double_v):
+            self.assertEqual(value, v.elems[index] * 2)
+        
+        negative_v = v.scmul(-1)
+        for index, value in enumerate(negative_v):
+            self.assertEqual(value, v.elems[index] * -1)
+        
+        decimal_v = v.scmul(0.5)
+        for index, value in enumerate(decimal_v):
+            self.assertEqual(value, v.elems[index] / 2)
+        
+        zero_v = v.scmul(0)
+        for index, value in enumerate(zero_v):
+            self.assertEqual(value, 0)
+
     def test_scprod(self):
-        v, w = Vector(1, 2, 3), Vector(-7, 8, 9)
-        self.assertEqual(v.scprod(w), 36)
+        # Two-dimensional
+        self.assertEqual(Vector(1, 2).scprod(Vector(3, 4)), 11)
+
+        # Three-dimensional
+        self.assertEqual(Vector(1, 2, 3).scprod(Vector(-7, 8, 9)), 36)
+        self.assertEqual(Vector(1, 0, 0).scprod(Vector(0, 0, 1)), 0)
 
 
 class TestMatrix(unittest.TestCase):
-    def test_det(self):
-        m = Matrix([3, 7], [1, -4])
-        self.assertEqual(m.det(), -19)
+    def test_matrix_init(self):
+        self.assertRaises(ValueError, Matrix, )
+        self.assertRaises(ValueError, Matrix, [])
+        self.assertRaises(ValueError, Matrix, [1, 2], [3])
+        self.assertRaises(ValueError, Matrix, [1], [2, 3])
+        self.assertRaises(ValueError, Matrix, [1, 2], [])
+        
+        _ = Matrix([1, 2], [3, 4])
+        _ = Matrix([1, 2, 3], [4, 5, 6])
+        _ = Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
+        _ = Matrix([1, 2, 3])
+        _ = Matrix([1], [2], [3])
 
-        m = Matrix([0, 1, 2], [3, 2, 1], [1, 1, 0])
-        self.assertEqual(m.det(), 3)
+    def test_det(self):
+        self.assertEqual(Matrix([3, 7], [1, -4]).det(), -19)
+
+        self.assertEqual(Matrix([0, 1, 2], [3, 2, 1], [1, 1, 0]).det(), 3)
+        
+        # Not nxn (square) matrix
+        self.assertRaises(ValueError, Matrix([1, 2, 3], [4, 5, 6]).det)
 
     def test_inverse(self):
         pass
 
     def test_isinvertable(self):
-        pass
+        self.assertTrue(Matrix([1, 2], [3, 4])._isinvertable())
+        self.assertFalse(Matrix([1, 2, 3], [4, 5, 6])._isinvertable())
+        self.assertFalse(Matrix([1, 2], [2, 4])._isinvertable())
 
 
 def main():
