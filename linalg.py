@@ -1,4 +1,5 @@
 from __future__ import annotations
+from multiprocessing.sharedctypes import Value
 import numpy as np
 
 numeric = int | float | complex | np.number
@@ -25,6 +26,8 @@ class Vector:
 
     def __add__(self, __o: object) -> Vector:
         if isinstance(__o, self.__class__):
+            if len(__o) != self.__len__():
+                raise ValueError("Vectors must be of equal dimension")
             return Vector(*(x + y for x, y in zip(self, __o)))
         elif isinstance(__o, numeric):
             return Vector(*(x + __o for x in self))
@@ -148,9 +151,55 @@ import unittest
 
 class TestVector(unittest.TestCase):
     def test_vector_init(self):
-        self.assertRaises(ValueError, Vector, )
+        self.assertRaises(
+            ValueError,
+            Vector,
+        )
         self.assertRaises(ValueError, Vector, 1)
-    
+
+    def test_vector_add(self):
+        self.assertEqual(Vector(1, 2, 3) + Vector(1, 2, 3), Vector(2, 4, 6))
+        self.assertEqual(
+            Vector(1.5, 2.5, 3.5) + Vector(0.6, 1.2, 1.8), Vector(2.1, 3.7, 5.3)
+        )
+        self.assertEqual(
+            Vector(3 + 4j, 2 + 3j, 7 + 1j) + Vector(6 + 1j, 5 + 2j, 1 + 3j),
+            Vector(9 + 5j, 7 + 5j, 8 + 4j),
+        )
+
+        self.assertEqual(Vector(1, 2, 3) + 1, Vector(2, 3, 4))
+        self.assertEqual(Vector(1.5, 2.5, 3.5) + 0.5, Vector(2.0, 3.0, 4.0))
+        self.assertEqual(
+            Vector(3 + 4j, 2 + 3j, 7 + 1j) + (5 + 2j), Vector(8 + 6j, 7 + 5j, 12 + 3j)
+        )
+
+        self.assertEqual(Vector(1, 2, 3) + 0.5, Vector(1.5, 2.5, 3.5))
+        self.assertEqual(Vector(1, 2, 3) + (3 + 2j), Vector(4 + 2j, 5 + 2j, 6 + 2j))
+
+        self.assertRaises(ValueError, Vector(1, 2, 3).__add__, Vector(1, 2))
+        self.assertRaises(ValueError, Vector(1, 2).__add__, Vector(1, 2, 3))
+
+        self.assertRaises(TypeError, Vector(1, 2, 3).__add__, "String")
+        self.assertRaises(TypeError, Vector(1, 2, 3).__add__, "c")
+        self.assertRaises(TypeError, Vector(1, 2, 3).__add__, [1, 2, 3])
+        self.assertRaises(TypeError, Vector(1, 2, 3).__add__, (1, 2, 3))
+        self.assertRaises(
+            TypeError, Vector(1, 2, 3).__add__, {"one": 1, "two": 2, "three": 3}
+        )
+
+    def test_vector_radd(self):
+        self.assertEqual(1 + Vector(1, 2, 3), Vector(1, 2, 3) + 1)
+        self.assertEqual(0.5 + Vector(1, 2, 3), Vector(1, 2, 3) + 0.5)
+        self.assertEqual((2 + 3j) + Vector(1, 2, 3), Vector(1, 2, 3) + (2 + 3j))
+
+        self.assertRaises(TypeError, Vector(1, 2, 3).__radd__, "String")
+        self.assertRaises(TypeError, Vector(1, 2, 3).__radd__, "c")
+        self.assertRaises(TypeError, Vector(1, 2, 3).__radd__, [1, 2, 3])
+        self.assertRaises(TypeError, Vector(1, 2, 3).__radd__, (1, 2, 3))
+        self.assertRaises(
+            TypeError, Vector(1, 2, 3).__radd__, {"one": 1, "two": 2, "three": 3}
+        )
+
     def test_scmul(self):
         # Two-dimensional
         v = Vector(1, 2)
@@ -163,15 +212,15 @@ class TestVector(unittest.TestCase):
         double_v = v.scmul(2)
         for index, value in enumerate(double_v):
             self.assertEqual(value, v.elems[index] * 2)
-        
+
         negative_v = v.scmul(-1)
         for index, value in enumerate(negative_v):
             self.assertEqual(value, v.elems[index] * -1)
-        
+
         decimal_v = v.scmul(0.5)
         for index, value in enumerate(decimal_v):
             self.assertEqual(value, v.elems[index] / 2)
-        
+
         zero_v = v.scmul(0)
         for index, value in enumerate(zero_v):
             self.assertEqual(value, 0)
@@ -187,12 +236,15 @@ class TestVector(unittest.TestCase):
 
 class TestMatrix(unittest.TestCase):
     def test_matrix_init(self):
-        self.assertRaises(ValueError, Matrix, )
+        self.assertRaises(
+            ValueError,
+            Matrix,
+        )
         self.assertRaises(ValueError, Matrix, [])
         self.assertRaises(ValueError, Matrix, [1, 2], [3])
         self.assertRaises(ValueError, Matrix, [1], [2, 3])
         self.assertRaises(ValueError, Matrix, [1, 2], [])
-        
+
         _ = Matrix([1, 2], [3, 4])
         _ = Matrix([1, 2, 3], [4, 5, 6])
         _ = Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
@@ -203,7 +255,7 @@ class TestMatrix(unittest.TestCase):
         self.assertEqual(Matrix([3, 7], [1, -4]).det(), -19)
 
         self.assertEqual(Matrix([0, 1, 2], [3, 2, 1], [1, 1, 0]).det(), 3)
-        
+
         # Not nxn (square) matrix
         self.assertRaises(ValueError, Matrix([1, 2, 3], [4, 5, 6]).det)
 
