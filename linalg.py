@@ -1,5 +1,7 @@
 from __future__ import annotations
-from multiprocessing.sharedctypes import Value
+
+from typing import Iterator
+
 import numpy as np
 
 numeric = int | float | complex | np.number
@@ -21,7 +23,7 @@ class Vector:
     def __len__(self) -> int:
         return len(self.elems)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[numeric]:
         return self.elems.__iter__()
 
     def __add__(self, __o: object) -> Vector:
@@ -37,13 +39,13 @@ class Vector:
     def __radd__(self, __o: object) -> Vector:
         return self.__add__(__o)
 
-    def __sub__(self, __o: object):
+    def __sub__(self, __o: object) -> Vector:
         if not isinstance(__o, self.__class__) and not np.isinstance(__o, numeric):
             raise TypeError("Only subtract vectors with numerics or other vectors")
         else:
             return self.__add__(__o * (-1))
 
-    def __rsub__(self, __o: object):
+    def __rsub__(self, __o: object) -> Vector:
         return self.__sub__(__o)
 
     def __mul__(self, __o: object) -> Vector | numeric:
@@ -150,14 +152,14 @@ import unittest
 
 
 class TestVector(unittest.TestCase):
-    def test_vector_init(self):
+    def test_vector_init(self) -> None:
         self.assertRaises(
             ValueError,
             Vector,
         )
         self.assertRaises(ValueError, Vector, 1)
 
-    def test_vector_add(self):
+    def test_vector_add(self) -> None:
         self.assertEqual(Vector(1, 2, 3) + Vector(1, 2, 3), Vector(2, 4, 6))
         self.assertEqual(
             Vector(1.5, 2.5, 3.5) + Vector(0.6, 1.2, 1.8), Vector(2.1, 3.7, 5.3)
@@ -187,7 +189,7 @@ class TestVector(unittest.TestCase):
             TypeError, Vector(1, 2, 3).__add__, {"one": 1, "two": 2, "three": 3}
         )
 
-    def test_vector_radd(self):
+    def test_vector_radd(self) -> None:
         self.assertEqual(1 + Vector(1, 2, 3), Vector(1, 2, 3) + 1)
         self.assertEqual(0.5 + Vector(1, 2, 3), Vector(1, 2, 3) + 0.5)
         self.assertEqual((2 + 3j) + Vector(1, 2, 3), Vector(1, 2, 3) + (2 + 3j))
@@ -200,7 +202,7 @@ class TestVector(unittest.TestCase):
             TypeError, Vector(1, 2, 3).__radd__, {"one": 1, "two": 2, "three": 3}
         )
 
-    def test_scmul(self):
+    def test_scmul(self) -> None:
         # Two-dimensional
         v = Vector(1, 2)
         double_v = v.scmul(2)
@@ -225,7 +227,7 @@ class TestVector(unittest.TestCase):
         for index, value in enumerate(zero_v):
             self.assertEqual(value, 0)
 
-    def test_scprod(self):
+    def test_scprod(self) -> None:
         # Two-dimensional
         self.assertEqual(Vector(1, 2).scprod(Vector(3, 4)), 11)
 
@@ -235,7 +237,7 @@ class TestVector(unittest.TestCase):
 
 
 class TestMatrix(unittest.TestCase):
-    def test_matrix_init(self):
+    def test_matrix_init(self) -> None:
         self.assertRaises(
             ValueError,
             Matrix,
@@ -251,7 +253,7 @@ class TestMatrix(unittest.TestCase):
         _ = Matrix([1, 2, 3])
         _ = Matrix([1], [2], [3])
 
-    def test_det(self):
+    def test_det(self) -> None:
         self.assertEqual(Matrix([3, 7], [1, -4]).det(), -19)
 
         self.assertEqual(Matrix([0, 1, 2], [3, 2, 1], [1, 1, 0]).det(), 3)
@@ -259,16 +261,16 @@ class TestMatrix(unittest.TestCase):
         # Not nxn (square) matrix
         self.assertRaises(ValueError, Matrix([1, 2, 3], [4, 5, 6]).det)
 
-    def test_inverse(self):
+    def test_inverse(self) -> None:
         pass
 
-    def test_isinvertable(self):
+    def test_isinvertable(self) -> None:
         self.assertTrue(Matrix([1, 2], [3, 4])._isinvertable())
         self.assertFalse(Matrix([1, 2, 3], [4, 5, 6])._isinvertable())
         self.assertFalse(Matrix([1, 2], [2, 4])._isinvertable())
 
 
-def main():
+def main() -> None:
     unittest.main()
 
 
