@@ -45,9 +45,6 @@ class Vector:
         else:
             return self.__add__(__o * (-1))
 
-    def __rsub__(self, __o: object) -> Vector:
-        return self.__sub__(__o)
-
     def __mul__(self, __o: object) -> Vector | numeric:
         if isinstance(__o, self.__class__):
             return self.scprod(__o)
@@ -209,6 +206,31 @@ class TestVector(unittest.TestCase):
         self.assertRaises(TypeError, Vector(1, 2, 3).__radd__, (1, 2, 3))
         self.assertRaises(
             TypeError, Vector(1, 2, 3).__radd__, {"one": 1, "two": 2, "three": 3}
+        )
+
+    def test_vector_sub(self) -> None:
+        self.assertEqual(Vector(1, 2, 3) - Vector(1, 2, 3), Vector(0, 0, 0))
+        self.assertEqual(Vector(1.5, 2.5, 3.5) - Vector(0.5, 0.5, 0.5), Vector(1, 2, 3))
+        self.assertEqual(
+            Vector(2 + 3j, 5 + 4j, 8 + 2j) - Vector(1 + 2j, 2 + 2j, 3 + 4j),
+            Vector(1 + 1j, 3 + 2j, 5 - 2j),
+        )
+
+        self.assertEqual(Vector(1, 2, 3) - 1, Vector(0, 1, 2))
+        self.assertEqual(Vector(1.5, 2.5, 3.5) - 1.5, Vector(0, 1, 2))
+        self.assertEqual(
+            Vector(2 + 3j, 5 + 4j, 8 + 2j) - (1 + 2j), Vector(1 + 1j, 4 + 2j, 7 + 0j)
+        )
+
+        self.assertRaises(ValueError, Vector(1, 2, 3).__sub__, Vector(1, 2))
+        self.assertRaises(ValueError, Vector(1, 2).__sub__, Vector(1, 2, 3))
+
+        self.assertRaises(TypeError, Vector(1, 2, 3).__sub__, "String")
+        self.assertRaises(TypeError, Vector(1, 2, 3).__sub__, "c")
+        self.assertRaises(TypeError, Vector(1, 2, 3).__sub__, [1, 2, 3])
+        self.assertRaises(TypeError, Vector(1, 2, 3).__sub__, (1, 2, 3))
+        self.assertRaises(
+            TypeError, Vector(1, 2, 3).__sub__, {"one": 1, "two": 2, "three": 3}
         )
 
     def test_scmul(self) -> None:
