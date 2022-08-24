@@ -40,7 +40,7 @@ class Vector:
         return self.__add__(__o)
 
     def __sub__(self, __o: object) -> Vector:
-        if not isinstance(__o, self.__class__) and not np.isinstance(__o, numeric):
+        if not isinstance(__o, self.__class__) and not isinstance(__o, numeric):
             raise TypeError("Only subtract vectors with numerics or other vectors")
         else:
             return self.__add__(__o * (-1))
@@ -100,7 +100,9 @@ class Matrix:
             cols_snd, rows_snd = len(__o.elems[0]), len(__o.elems)
 
             if cols_fst == rows_snd:
-                res = [[0 for _ in range(0, cols_snd)] for _ in range(0, rows_fst)]
+                res: list[list[numeric]] = [
+                    [0 for _ in range(0, cols_snd)] for _ in range(0, rows_fst)
+                ]
 
                 for i in range(0, rows_fst):
                     for j in range(0, cols_snd):
@@ -127,6 +129,10 @@ class Matrix:
             return self.__det2d()
         elif len(self.elems) == 3:
             return self.__det3d()
+        else:
+            raise ValueError(
+                "Determinant calculation not yet implemented for matrices larger than 3x3"
+            )
 
     def __det2d(self) -> numeric:
         return self.elems[0][0] * self.elems[1][1] - self.elems[0][1] * self.elems[1][0]
@@ -142,7 +148,10 @@ class Matrix:
         )
 
     def inverse(self) -> Matrix:
-        pass
+        if self._isinvertable():
+            pass
+        else:
+            raise ValueError("Matrix is not invertable")
 
     def _isinvertable(self) -> bool:
         return len(self.elems) == len(self.elems[0]) and self.det() != 0
