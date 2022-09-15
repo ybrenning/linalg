@@ -1,4 +1,5 @@
 from __future__ import annotations
+import math
 
 from typing import Iterator
 
@@ -73,6 +74,36 @@ class Vector:
             raise ValueError("Vectors must be of equal dimension")
 
         return sum(x * y for x, y in zip(self, w))
+    
+    def magnitude(self) -> int | float:
+        if not isinstance(self.elems[0], int) or not isinstance(self.elems[0], float):
+            raise TypeError("Square root calculation only implemented for int and float.")
+
+        mag = 0
+        for i in range(0, self.__len__()):
+            mag += self.elems[i]**2
+        
+        assert isinstance(mag, int) or isinstance(mag, float)
+        return math.sqrt(mag)
+    
+    def norm(self) -> Vector:
+        """Norm of the vector (https://en.wikipedia.org/wiki/Norm_(mathematics))
+
+        Returns:
+            Normed vector
+        """
+        return self.scmul(1 / self.magnitude())
+    
+    def orth_proj(self, w: Vector) -> Vector:
+        """Orthogonal projection (https://en.wikipedia.org/wiki/Vector_projection)
+
+        Args:
+            w: Vector to be projected onto
+
+        Returns:
+            Projected vector
+        """
+        return self.scmul((self.scprod(w) / self.magnitude()))
 
 
 class Matrix:
