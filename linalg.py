@@ -74,26 +74,24 @@ class Vector:
             raise ValueError("Vectors must be of equal dimension")
 
         return sum(x * y for x, y in zip(self, w))
-    
-    def magnitude(self) -> int | float:
-        if not isinstance(self.elems[0], int) or not isinstance(self.elems[0], float):
-            raise TypeError("Square root calculation only implemented for int and float.")
 
+    def magnitude(self) -> numeric:
         mag = 0
         for i in range(0, self.__len__()):
-            mag += self.elems[i]**2
-        
+            mag += self.elems[i] ** 2
+
         assert isinstance(mag, int) or isinstance(mag, float)
         return math.sqrt(mag)
-    
+
     def norm(self) -> Vector:
         """Norm of the vector (https://en.wikipedia.org/wiki/Norm_(mathematics))
 
         Returns:
             Normed vector
         """
+
         return self.scmul(1 / self.magnitude())
-    
+
     def orth_proj(self, w: Vector) -> Vector:
         """Orthogonal projection (https://en.wikipedia.org/wiki/Vector_projection)
 
@@ -103,7 +101,46 @@ class Vector:
         Returns:
             Projected vector
         """
-        return self.scmul((self.scprod(w) / self.magnitude()))
+
+        return self.scmul((self.scprod(w) / self.scprod(self)))
+
+
+def orthogonalize(*args: Vector) -> tuple[Vector, ...]:
+    """Orthogonalize a given set of vectors using the
+    [Gram-Schmidt Process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
+
+    Args:
+        *args: Set of linearly independent vectors
+
+    Returns:
+        An orthogonal set containing that spans the same k-dimensional subspace as the given set.
+    """
+
+    if len(args) < 2:
+        raise ValueError("Please provide at least 2 vectors")
+
+    vecs = [args[0]]
+    for i in range(1, len(args)):
+        vecs.append(args[i] - args[i - 1].orth_proj(args[i]))
+
+    return tuple(vecs)
+
+
+def orthonormalize(*args: Vector) -> tuple[Vector, ...]:
+    """Orthonormalize a given set of vectors using the
+    [Gram-Schmidt Process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
+
+    Args:
+        *args: Set of linearly independent vectors
+
+    Returns:
+        An orthonormalized set containing that spans the same k-dimensional subspace as the given set.
+    """
+
+    if len(args) < 2:
+        raise ValueError("Please provide at least 2 vectors")
+
+    return tuple([v.norm() for v in orthogonalize(*args)])
 
 
 class Matrix:
@@ -296,6 +333,21 @@ class TestVector(unittest.TestCase):
         # Three-dimensional
         self.assertEqual(Vector(1, 2, 3).scprod(Vector(-7, 8, 9)), 36)
         self.assertEqual(Vector(1, 0, 0).scprod(Vector(0, 0, 1)), 0)
+
+    def test_magnitude(self) -> None:
+        pass
+
+    def test_norm(self) -> None:
+        pass
+
+    def orth_proj(self) -> None:
+        pass
+
+    def orthogonolize(self) -> None:
+        pass
+
+    def orthonormalize(self) -> None:
+        pass
 
 
 class TestMatrix(unittest.TestCase):
