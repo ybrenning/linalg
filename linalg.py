@@ -1,7 +1,7 @@
 from __future__ import annotations
 import math
 
-from typing import Iterator
+from typing import Any, Iterator
 
 import numpy as np
 
@@ -159,6 +159,9 @@ class Matrix:
     def __repr__(self) -> str:
         return f"Matrix({repr(self.elems)})"
 
+    def __eq__(self, __o: object) -> bool:
+        return isinstance(__o, self.__class__) and __o.elems == self.elems
+
     def __mul__(self, __o: object) -> Matrix:
         if isinstance(__o, self.__class__):
             cols_fst, rows_fst = len(self.elems[0]), len(self.elems)
@@ -179,9 +182,13 @@ class Matrix:
                 raise ValueError(
                     "Number of cols in first matrix must be equal to number of rows in second matrix"
                 )
+        elif isinstance(__o, numeric):
+            args = [[x * __o for x in row] for row in self.elems]
+            assert all(all(isinstance(x, numeric) for x in row) for row in args)
+            return Matrix(*args)  # type: ignore
         else:
             raise TypeError(
-                "Matrix multiplication not yet implemented for calculations other than Matrix * Matrix"
+                "Matrices can only be multiplied by other matrices or numerics."
             )
 
     def det(self) -> numeric:
@@ -214,12 +221,16 @@ class Matrix:
 
     def inverse(self) -> Matrix:
         if self._isinvertable():
-            pass
+            if len(self.elems) == 2:
+                pass
         else:
             raise ValueError("Matrix is not invertable")
 
     def _isinvertable(self) -> bool:
         return len(self.elems) == len(self.elems[0]) and self.det() != 0
+
+    def transpose(self) -> Matrix:
+        return Matrix(*map(list, zip(*self.elems)))
 
 
 import unittest
@@ -367,6 +378,44 @@ class TestMatrix(unittest.TestCase):
         _ = Matrix([1, 2, 3])
         _ = Matrix([1], [2], [3])
 
+    def test_matrix_mul(self) -> None:
+        # 2x2 Matrices with scalars
+        self.assertEqual(Matrix([1, 2], [3, 4]) * 2, Matrix([2, 4], [6, 8]))
+        self.assertEqual(
+            Matrix([0.5, 1.5], [2.5, 3.5]) * 2, Matrix([1.0, 3.0], [5.0, 7.0])
+        )
+
+        # 3x3 Matrices with scalars
+        self.assertEqual(
+            Matrix([1, 2, 3], [4, 5, 6]) * 2, Matrix([2, 4, 6], [8, 10, 12])
+        )
+        self.assertEqual(
+            Matrix([0.5, 1.5, 2.5], [3.5, 4.5, 5.5]) * 2,
+            Matrix([1.0, 3.0, 5.0], [7.0, 9.0, 11.0]),
+        )
+
+        # Matrix * Matrix
+        self.assertEqual(
+            Matrix([3, 2, 1], [1, 0, 2]) * Matrix([1, 2], [0, 1], [4, 0]),
+            Matrix([7, 8], [9, 2]),
+        )
+        self.assertEqual(
+            Matrix([3, 5, -1], [4, -8, 2]) * Matrix([0, 3, 1], [6, 5, 0], [2, -7, 3]),
+            Matrix([28, 41, 0], [-44, -42, 10]),
+        )
+
+        self.assertRaises(
+            ValueError,
+            Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9]).__mul__,
+            Matrix([1, 2], [3, 4]),
+        )
+        self.assertRaises(TypeError, Matrix([1, 2], [3, 4]).__mul__, "String")
+        self.assertRaises(TypeError, Matrix([1, 2], [3, 4]).__mul__, [1, 2, 3])
+        self.assertRaises(TypeError, Matrix([1, 2], [3, 4]).__mul__, (1, 2, 3))
+        self.assertRaises(
+            TypeError, Matrix([1, 2], [3, 4]).__mul__, {"one": 1, "two": 2, "three": 3}
+        )
+
     def test_det(self) -> None:
         self.assertEqual(Matrix([3, 7], [1, -4]).det(), -19)
 
@@ -382,6 +431,12 @@ class TestMatrix(unittest.TestCase):
         self.assertTrue(Matrix([1, 2], [3, 4])._isinvertable())
         self.assertFalse(Matrix([1, 2, 3], [4, 5, 6])._isinvertable())
         self.assertFalse(Matrix([1, 2], [2, 4])._isinvertable())
+
+    def test_transpose(self) -> None:
+        self.assertEqual(Matrix([1, 2], [3, 4]).transpose(), Matrix([1, 3], [2, 4]))
+        self.assertEqual(
+            Matrix([1, 2, 3], [4, 5, 6]).transpose(), Matrix([1, 4], [2, 5], [3, 6])
+        )
 
 
 def main() -> None:
