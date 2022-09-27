@@ -192,6 +192,12 @@ class Matrix:
             )
 
     def det(self) -> numeric:
+        """Calculates the [determinant](https://en.wikipedia.org/wiki/Determinant) of a 2x2 or 3x3 matrix.
+
+        Returns:
+            determinant as a numeric scalar value
+        """
+
         if len(self.elems) != len(self.elems[0]):
             raise ValueError(
                 "Determinant can only be calculated for a square Matrix of size nxn"
@@ -203,11 +209,14 @@ class Matrix:
             return self.__det3d()
         else:
             raise ValueError(
-                "Determinant calculation not yet implemented for matrices larger than 3x3"
+                "Determinant calculation not implemented for matrices larger than 3x3"
             )
 
     def __det2d(self) -> numeric:
         return self.elems[0][0] * self.elems[1][1] - self.elems[0][1] * self.elems[1][0]
+
+    def minor(self, row: int, col: int) -> Matrix:
+        pass
 
     def __det3d(self) -> numeric:
         return (
@@ -220,6 +229,13 @@ class Matrix:
         )
 
     def inverse(self) -> Matrix:
+        """Calculates the inverse matrix B of the current nxn matrix A such that
+        AB = BA = I, where I is the nxn [identity matrix](https://en.wikipedia.org/wiki/Identity_matrix).
+
+        Returns:
+            matrix to be reversed
+        """
+    
         if self._isinvertable():
             if len(self.elems) == 2:
                 pass
@@ -227,6 +243,11 @@ class Matrix:
             raise ValueError("Matrix is not invertable")
 
     def _isinvertable(self) -> bool:
+        """Determines whether or not the current matrix instance is invertable.
+
+        Returns:
+            true if reversible, false otherwise
+        """
         return len(self.elems) == len(self.elems[0]) and self.det() != 0
 
     def transpose(self) -> Matrix:
