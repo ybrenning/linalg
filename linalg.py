@@ -192,7 +192,7 @@ class Matrix:
             )
 
     def det(self) -> numeric:
-        """Calculates the [determinant](https://en.wikipedia.org/wiki/Determinant) of a 2x2 or 3x3 matrix.
+        """Calculates the [determinant](https://en.wikipedia.org/wiki/Determinant) of a square matrix.
 
         Returns:
             determinant as a numeric scalar value
@@ -203,30 +203,57 @@ class Matrix:
                 "Determinant can only be calculated for a square Matrix of size nxn"
             )
 
-        if len(self.elems) == 2:
-            return self.__det2d()
-        elif len(self.elems) == 3:
-            return self.__det3d()
+        return Matrix.__det_rec(self)
+
+    @staticmethod
+    def __det2d(matrix: Matrix) -> numeric:
+        return matrix.elems[0][0] * matrix.elems[1][1] - matrix.elems[0][1] * matrix.elems[1][0]
+    
+    @staticmethod
+    def __det_rec(matrix: Matrix) -> numeric:
+        """Recursive implementation of the [Laplace Expansion](https://en.wikipedia.org/wiki/Laplace_expansion)
+        We use the simple determinant formula for 2-dimensional matrices as the base case and use cofactor
+        expansion to calculate the determinant for higher dimensional matrices.
+        
+        Note: This algorithm quickly becomes inefficent for large matrices.
+
+        Args:
+            matrix: matrix or submatrix of which to calculate the determinant
+
+        Returns:
+            numeric: determinant of given matrix
+        """
+        
+        if len(matrix.elems) == 2:
+            return Matrix.__det2d(matrix)
         else:
-            raise ValueError(
-                "Determinant calculation not implemented for matrices larger than 3x3"
-            )
+            return sum((-1)**col * x * Matrix.__det_rec(Matrix.minor(matrix, 0, col)) for col, x in enumerate(matrix.elems[0])) 
+        
 
-    def __det2d(self) -> numeric:
-        return self.elems[0][0] * self.elems[1][1] - self.elems[0][1] * self.elems[1][0]
+    @staticmethod
+    def minor(matrix: Matrix, row: int, col: int) -> Matrix:
+        """Creates the first minor submatrix of an nxn matrix using a given row and column to remove.
+        See also: [Minor (linear algebra)](https://en.wikipedia.org/wiki/Minor_(linear_algebra)#First_minors)
 
-    def minor(self, row: int, col: int) -> Matrix:
-        pass
+        Args:
+            matrix: matrix to be split
+            row: row to be removed
+            col: column to be removed
 
-    def __det3d(self) -> numeric:
-        return (
-            self.elems[0][0] * self.elems[1][1] * self.elems[2][2]
-            + self.elems[0][1] * self.elems[1][2] * self.elems[2][0]
-            + self.elems[0][2] * self.elems[1][0] * self.elems[2][1]
-            - self.elems[0][2] * self.elems[1][1] * self.elems[2][0]
-            - self.elems[0][1] * self.elems[1][0] * self.elems[2][2]
-            - self.elems[0][0] * self.elems[1][2] * self.elems[2][1]
-        )
+        Returns:
+            submatrix of size (n-1)x(n-1) formed by removing the row and column
+        """
+        
+        args = [row[:col] + row[col + 1:] for row in (matrix.elems[:row] + matrix.elems[row + 1:])]
+        return Matrix(*args)
+    
+    @staticmethod
+    def cofactor(matrix: Matrix) -> Matrix:
+        minor = [Matrix.__det_rec(Matrix.minor(matrix, row, col)) for col in range(0, len(matrix.elems)) for row in range(0, len(matrix.elems))]
+        return Matrix(*[[(-1)**(row + col) * x for col, x in enumerate(minor[row])] for row in range(0, len(minor))])  # type: ignore
+
+    def adjungate(self) -> Matrix:
+        return Matrix.transpose(Matrix.cofactor(self))
 
     def inverse(self) -> Matrix:
         """Calculates the inverse matrix B of the current nxn matrix A such that
@@ -237,8 +264,7 @@ class Matrix:
         """
     
         if self._isinvertable():
-            if len(self.elems) == 2:
-                pass
+            return self.adjungate() * (1 / self.det())
         else:
             raise ValueError("Matrix is not invertable")
 
@@ -248,10 +274,12 @@ class Matrix:
         Returns:
             true if reversible, false otherwise
         """
+        
         return len(self.elems) == len(self.elems[0]) and self.det() != 0
 
-    def transpose(self) -> Matrix:
-        return Matrix(*map(list, zip(*self.elems)))
+    @staticmethod
+    def transpose(matrix: Matrix) -> Matrix:
+        return Matrix(*map(list, zip(*matrix.elems)))
 
 
 import unittest
@@ -454,13 +482,15 @@ class TestMatrix(unittest.TestCase):
         self.assertFalse(Matrix([1, 2], [2, 4])._isinvertable())
 
     def test_transpose(self) -> None:
-        self.assertEqual(Matrix([1, 2], [3, 4]).transpose(), Matrix([1, 3], [2, 4]))
+        self.assertEqual(Matrix.transpose(Matrix([1, 2], [3, 4])), Matrix([1, 3], [2, 4]))
         self.assertEqual(
-            Matrix([1, 2, 3], [4, 5, 6]).transpose(), Matrix([1, 4], [2, 5], [3, 6])
+            Matrix.transpose(Matrix([1, 2, 3], [4, 5, 6])), Matrix([1, 4], [2, 5], [3, 6])
         )
 
 
 def main() -> None:
+    m = Matrix([2, 3], [1, 2])
+    print(m.det())
     unittest.main()
 
 
