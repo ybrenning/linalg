@@ -106,8 +106,7 @@ class Vector:
 
 
 def orthogonalize(*args: Vector) -> tuple[Vector, ...]:
-    """Orthogonalize a given set of vectors using the
-    [Gram-Schmidt Process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
+    """Orthogonalize a given set of vectors using the [Gram-Schmidt Process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
 
     Args:
         *args: Set of linearly independent vectors
@@ -127,8 +126,7 @@ def orthogonalize(*args: Vector) -> tuple[Vector, ...]:
 
 
 def orthonormalize(*args: Vector) -> tuple[Vector, ...]:
-    """Orthonormalize a given set of vectors using the
-    [Gram-Schmidt Process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
+    """Orthonormalize a given set of vectors using the [Gram-Schmidt Process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
 
     Args:
         *args: Set of linearly independent vectors
@@ -227,13 +225,19 @@ class Matrix:
             numeric: determinant of given matrix
         """
 
-        if len(matrix.elems) == 2:
+        if len(matrix.elems) == 1:
+            return matrix.elems[0][0]
+        elif len(matrix.elems) == 2:
             return Matrix.__det2d(matrix)
         else:
             return sum(
                 (-1) ** col * x * Matrix.__det_rec(Matrix.minor(matrix, 0, col))
                 for col, x in enumerate(matrix.elems[0])
             )
+
+    @staticmethod
+    def transpose(matrix: Matrix) -> Matrix:
+        return Matrix(*map(list, zip(*matrix.elems)))
 
     @staticmethod
     def minor(matrix: Matrix, row: int, col: int) -> Matrix:
@@ -249,23 +253,57 @@ class Matrix:
             submatrix of size (n-1)x(n-1) formed by removing the row and column
         """
 
+        if len(matrix.elems) != len(matrix.elems[0]):
+            raise ValueError(
+                "Minor can only be calculated for a square Matrix of size nxn"
+            )
+
         args = [
             row[:col] + row[col + 1 :]
             for row in (matrix.elems[:row] + matrix.elems[row + 1 :])
         ]
+
         return Matrix(*args)
 
     @staticmethod
     def cofactor(matrix: Matrix) -> Matrix:
+        """Calculates the cofactor matrix of a given matrix using the minors.
+        See also: [Cofactor Matrix](https://en.wikipedia.org/wiki/Minor_(linear_algebra)#Inverse_of_a_matrix)
+
+        Args:
+            matrix: matrix of which to determine the cofactors
+
+        Returns:
+            matrix of cofactors
+        """
+
         minor = [
-            Matrix.__det_rec(Matrix.minor(matrix, row, col))
-            for col in range(0, len(matrix.elems))
+            [
+                Matrix.__det_rec(Matrix.minor(matrix, row, col))
+                for col in range(0, len(matrix.elems))
+            ]
             for row in range(0, len(matrix.elems))
         ]
-        return Matrix(*[[(-1) ** (row + col) * x for col, x in enumerate(minor[row])] for row in range(0, len(minor))])  # type: ignore
+
+        cofactor = [
+            [(-1) ** (row + col) * x for col, x in enumerate(minor[row])]
+            for row in range(0, len(minor))
+        ]
+        return Matrix(*cofactor)
 
     def adjungate(self) -> Matrix:
-        return Matrix.transpose(Matrix.cofactor(self))
+        """Calculates the adjungate matrix of the current instance which corresponds to the
+        transpose of its cofactor matrix.
+        See also: [Adjungate Matrix](https://en.wikipedia.org/wiki/Adjugate_matrix)
+
+        Returns:
+            adjungate of the matrix
+        """
+
+        if self.elems == 1 == self.elems[0]:
+            return Matrix([1])
+        else:
+            return Matrix.transpose(Matrix.cofactor(self))
 
     def inverse(self) -> Matrix:
         """Calculates the inverse matrix B of the current nxn matrix A such that
@@ -288,10 +326,6 @@ class Matrix:
         """
 
         return len(self.elems) == len(self.elems[0]) and self.det() != 0
-
-    @staticmethod
-    def transpose(matrix: Matrix) -> Matrix:
-        return Matrix(*map(list, zip(*matrix.elems)))
 
 
 import unittest
@@ -485,14 +519,6 @@ class TestMatrix(unittest.TestCase):
         # Not nxn (square) matrix
         self.assertRaises(ValueError, Matrix([1, 2, 3], [4, 5, 6]).det)
 
-    def test_inverse(self) -> None:
-        pass
-
-    def test_isinvertable(self) -> None:
-        self.assertTrue(Matrix([1, 2], [3, 4])._isinvertable())
-        self.assertFalse(Matrix([1, 2, 3], [4, 5, 6])._isinvertable())
-        self.assertFalse(Matrix([1, 2], [2, 4])._isinvertable())
-
     def test_transpose(self) -> None:
         self.assertEqual(
             Matrix.transpose(Matrix([1, 2], [3, 4])), Matrix([1, 3], [2, 4])
@@ -502,10 +528,56 @@ class TestMatrix(unittest.TestCase):
             Matrix([1, 4], [2, 5], [3, 6]),
         )
 
+    def test_minor(self) -> None:
+        self.assertEqual(
+            Matrix.minor(Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9]), 0, 0),
+            Matrix([5, 6], [8, 9]),
+        )
+        self.assertEqual(
+            Matrix.minor(Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9]), 0, 1),
+            Matrix([4, 6], [7, 9]),
+        )
+        self.assertEqual(
+            Matrix.minor(Matrix([1, 2, 3], [4, 5, 6], [7, 8, 9]), 1, 1),
+            Matrix([1, 3], [7, 9]),
+        )
+        self.assertEqual(
+            Matrix.minor(
+                Matrix([1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]),
+                0,
+                0,
+            ),
+            Matrix([6, 7, 8], [10, 11, 12], [14, 15, 16]),
+        )
+
+        self.assertRaises(
+            ValueError, Matrix.minor, Matrix([1, 2], [3, 4], [5, 6]), 0, 0
+        )
+        self.assertRaises(ValueError, Matrix.minor, Matrix([1, 2, 3], [4, 5, 6]), 0, 0)
+
+    def test_cofactor(self) -> None:
+        self.assertEqual(
+            Matrix.cofactor((Matrix([-3, 2, -5], [-1, 0, -2], [3, -4, 1]))),
+            Matrix([-8, -5, 4], [18, 12, -6], [-4, -1, 2]),
+        )
+
+    def test_adjungate(self) -> None:
+        self.assertEqual(
+            Matrix([-3, 2, -5], [-1, 0, -2], [3, -4, 1]).adjungate(),
+            Matrix([-8, 18, -4], [-5, 12, -1], [4, -6, 2]),
+        )
+
+    def test_inverse(self) -> None:
+        self.assertTrue(Matrix([2, 1], [6, 4]).inverse(), Matrix([2, -0.5], [-3, 1]))
+        self.assertTrue(Matrix([-1, 1.5], [1, -1]).inverse(), Matrix([2, 3], [2, 2]))
+
+    def test_isinvertable(self) -> None:
+        self.assertTrue(Matrix([1, 2], [3, 4])._isinvertable())
+        self.assertFalse(Matrix([1, 2, 3], [4, 5, 6])._isinvertable())
+        self.assertFalse(Matrix([1, 2], [2, 4])._isinvertable())
+
 
 def main() -> None:
-    m = Matrix([2, 3], [1, 2])
-    print(m.det())
     unittest.main()
 
 
