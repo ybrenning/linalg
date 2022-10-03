@@ -76,6 +76,12 @@ class Vector:
         return sum(x * y for x, y in zip(self, w))
 
     def magnitude(self) -> numeric:
+        """Calculates the [magnitude](https://en.wikipedia.org/wiki/Magnitude_(mathematics)#Euclidean_vector_space)
+        of the current vector instance
+
+        Returns:
+            Magnitude ||v|| of vector v
+        """
         mag = 0
         for i in range(0, self.__len__()):
             mag += self.elems[i] ** 2
@@ -84,7 +90,10 @@ class Vector:
         return math.sqrt(mag)
 
     def norm(self) -> Vector:
-        """Norm of the vector (https://en.wikipedia.org/wiki/Norm_(mathematics))
+        """Norm of the vector v where ||v|| = 1
+
+        See also: https://en.wikipedia.org/wiki/Norm_(mathematics)
+
 
         Returns:
             Normed vector
@@ -106,7 +115,8 @@ class Vector:
 
 
 def orthogonalize(*args: Vector) -> tuple[Vector, ...]:
-    """Orthogonalize a given set of vectors using the [Gram-Schmidt Process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
+    """Orthogonalize a given set of vectors using the \
+    [Gram-Schmidt Process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process).
 
     Args:
         *args: Set of linearly independent vectors
@@ -126,7 +136,8 @@ def orthogonalize(*args: Vector) -> tuple[Vector, ...]:
 
 
 def orthonormalize(*args: Vector) -> tuple[Vector, ...]:
-    """Orthonormalize a given set of vectors using the [Gram-Schmidt Process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
+    """Orthonormalize a given set of vectors using the \
+    [Gram-Schmidt Process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process).
 
     Args:
         *args: Set of linearly independent vectors
@@ -212,17 +223,20 @@ class Matrix:
 
     @staticmethod
     def __det_rec(matrix: Matrix) -> numeric:
-        """Recursive implementation of the [Laplace Expansion](https://en.wikipedia.org/wiki/Laplace_expansion)
+        """Recursive implementation of the \
+        [Laplace Expansion](https://en.wikipedia.org/wiki/Laplace_expansion).
+        
         We use the simple determinant formula for 2-dimensional matrices as the base case and use cofactor
         expansion to calculate the determinant for higher dimensional matrices.
 
-        Note: This algorithm quickly becomes inefficent for large matrices.
+        Note: 
+            This algorithm quickly becomes inefficent for large matrices.
 
         Args:
-            matrix: matrix or submatrix of which to calculate the determinant
+            matrix: Matrix or submatrix of which to calculate the determinant
 
         Returns:
-            numeric: determinant of given matrix
+            numeric: Determinant of given matrix
         """
 
         if len(matrix.elems) == 1:
@@ -245,12 +259,12 @@ class Matrix:
         See also: [Minor (linear algebra)](https://en.wikipedia.org/wiki/Minor_(linear_algebra)#First_minors)
 
         Args:
-            matrix: matrix to be split
-            row: row to be removed
-            col: column to be removed
+            matrix: Matrix to be split
+            row: Row to be removed
+            col: Column to be removed
 
         Returns:
-            submatrix of size (n-1)x(n-1) formed by removing the row and column
+            Submatrix of size (n-1)x(n-1) formed by removing the row and column
         """
 
         if len(matrix.elems) != len(matrix.elems[0]):
@@ -271,10 +285,10 @@ class Matrix:
         See also: [Cofactor Matrix](https://en.wikipedia.org/wiki/Minor_(linear_algebra)#Inverse_of_a_matrix)
 
         Args:
-            matrix: matrix of which to determine the cofactors
+            matrix: Matrix of which to determine the cofactors
 
         Returns:
-            matrix of cofactors
+            Matrix of cofactors
         """
 
         minor = [
@@ -294,10 +308,11 @@ class Matrix:
     def adjungate(self) -> Matrix:
         """Calculates the adjungate matrix of the current instance which corresponds to the
         transpose of its cofactor matrix.
+
         See also: [Adjungate Matrix](https://en.wikipedia.org/wiki/Adjugate_matrix)
 
         Returns:
-            adjungate of the matrix
+            Adjungate of the matrix
         """
 
         if self.elems == 1 == self.elems[0]:
@@ -310,7 +325,7 @@ class Matrix:
         AB = BA = I, where I is the nxn [identity matrix](https://en.wikipedia.org/wiki/Identity_matrix).
 
         Returns:
-            matrix to be reversed
+            Matrix to be reversed
         """
 
         if self._isinvertable():
@@ -322,7 +337,7 @@ class Matrix:
         """Determines whether or not the current matrix instance is invertable.
 
         Returns:
-            true if reversible, false otherwise
+            True if reversible, False otherwise
         """
 
         return len(self.elems) == len(self.elems[0]) and self.det() != 0
@@ -441,7 +456,17 @@ class TestVector(unittest.TestCase):
         self.assertEqual(Vector(1, 0, 0).scprod(Vector(0, 0, 1)), 0)
 
     def test_magnitude(self) -> None:
-        pass
+        self.assertEqual(Vector(1, 0, 0).magnitude(), 1)
+        self.assertEqual(Vector(0, 1, 0).magnitude(), 1)
+        self.assertEqual(Vector(0, 0, 1).magnitude(), 1)
+
+        # Magnitude of opposite vector should be identical
+        self.assertEqual(Vector(-1, 0, 0).magnitude(), Vector(1, 0, 0).magnitude())
+
+        self.assertEqual(Vector(0, 0, 2).magnitude(), 2)
+        self.assertEqual(Vector(1, 2, 2).magnitude(), 3)
+        self.assertEqual(Vector(4, 0, 0).magnitude(), 4)
+        self.assertEqual(Vector(4, 3, 0).magnitude(), 5)
 
     def test_norm(self) -> None:
         pass
@@ -526,6 +551,11 @@ class TestMatrix(unittest.TestCase):
         self.assertEqual(
             Matrix.transpose(Matrix([1, 2, 3], [4, 5, 6])),
             Matrix([1, 4], [2, 5], [3, 6]),
+        )
+
+        self.assertEqual(
+            Matrix.transpose(Matrix([0.5, 1.5, 2.5], [3.5, 4.5, 5.5])),
+            Matrix([0.5, 3.5], [1.5, 4.5], [2.5, 5.5]),
         )
 
     def test_minor(self) -> None:
