@@ -1,11 +1,17 @@
+"""Basic implementations of Linear Algebra concepts in Python.
+
+This library is always a work in progress and is by no means guaranteed to be complete.
+"""
+
 from __future__ import annotations
+
+__author__ = "Yannick Brenning"
+__email__ = "yannickbrenning2@gmail.com"
+
 import math
+from typing import Iterator
 
-from typing import Any, Iterator
-
-import numpy as np
-
-numeric = int | float | complex | np.number
+numeric = int | float | complex
 
 
 class Vector:
