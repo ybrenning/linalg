@@ -6,7 +6,6 @@ This library is always a work in progress and is by no means guaranteed to be co
 from __future__ import annotations
 
 __author__ = "Yannick Brenning"
-__email__ = "yannickbrenning2@gmail.com"
 
 import math
 from typing import Iterator
